@@ -1,0 +1,2 @@
+_target_: convnext_tts.lit_modules.normal.NormalLitModule
+params: ???

@@ -1,0 +1,9 @@
+wav_dir: /path/to/wav_24k_dir
+lab_dir: /path/to/fullcontext_label_dir
+
+data_root: /path/to/output_dir_for_preprocess
+train_df_file: ${.data_root}/df/train.csv
+valid_df_file: ${.data_root}/df/valid.csv
+
+cf0_dir: ${.data_root}/cf0
+vuv_dir: ${.data_root}/vuv

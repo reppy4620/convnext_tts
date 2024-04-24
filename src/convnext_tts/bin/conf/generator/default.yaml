@@ -1,0 +1,55 @@
+_target_: convnext_tts.models.convnext_tts.ConvNeXtTTS
+
+
+embedding:
+  _target_: convnext_tts.layers.embedding.EmbeddingLayer
+  num_vocab: 100
+  channels: 256
+
+encoder:
+  _target_: convnext_tts.modules.convnext.ConvNeXtModule
+  channels: ${..embedding.channels}
+  h_channels: 1024
+  num_layers: 6
+
+variance_adaptor:
+  _target_: convnext_tts.modules.variance_adaptor.VarianceAdaptor
+  duration_predictor:
+    _target_: convnext_tts.modules.variance_adaptor.VariancePredictor
+    channels: ${...encoder.channels}
+    out_channels: 1
+    num_layers: 3
+    detach: true
+  alignment_module:
+    _target_: convnext_tts.layers.alignment.AlignmentModule
+    adim: ${...encoder.channels}
+    odim: ${....mel.n_mels}
+  pitch_predictor:
+    _target_: convnext_tts.modules.variance_adaptor.VariancePredictor
+    channels: ${...encoder.channels}
+    out_channels: 2
+    num_layers: 3
+    detach: false
+  pitch_emb:
+    _target_: torch.nn.Conv1d
+    in_channels: 1
+    out_channels: ${...encoder.channels}
+    kernel_size: 1
+  forwardsum_loss:
+    _target_: convnext_tts.losses.forwardsum.ForwardSumLoss
+
+decoder:
+  _target_: convnext_tts.modules.convnext.ConvNeXtModule
+  channels: ${..encoder.channels}
+  h_channels: ${..encoder.channels}
+  num_layers: ${..encoder.num_layers}
+
+vocoder:
+  _target_: convnext_tts.modules.wavenext.WaveNeXt
+  in_channels: ${..decoder.channels}
+  channels: 512
+  h_channels: 1536
+  hop_length: ${...mel.hop_length}
+  num_layers: 8
+
+frame_segment_size: ${..train.frame_segment_size}

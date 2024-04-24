@@ -1,0 +1,11 @@
+train:
+  _target_: vocoders.datasets.NormalDataset
+  df_file: ${...path.train_df_file}
+  wav_dir: ${...path.wav_dir}
+  segment_size: 7680
+
+valid:
+  _target_: vocoders.datasets.NormalDataset
+  df_file: ${...path.valid_df_file}
+  wav_dir: ${...path.wav_dir}
+  segment_size: 7680

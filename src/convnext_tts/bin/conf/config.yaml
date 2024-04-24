@@ -1,0 +1,27 @@
+defaults:
+  - _self_
+  - path: default
+  - mel: default
+  - train: default
+  - dataset: default
+  - generator: default
+  - discriminator: default
+  - lit_module: default
+  - optimizer: adamw
+  - scheduler: exponential
+  - override hydra/job_logging: disabled
+  - override hydra/hydra_logging: disabled
+
+hydra:
+  run:
+    dir: ./
+  output_subdir: null
+
+preprocess:
+  overwrite: false
+
+train:
+  out_dir: ./out
+
+syn:
+  out_dir: ./out
