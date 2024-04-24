@@ -1,5 +1,5 @@
 train:
-  _target_: vocoders.datasets.NormalDataset
+  _target_: convnext_tts.datasets.normal.NormalDataset
   df_file: ${...path.train_df_file}
   wav_dir: ${...path.wav_dir}
   cf0_dir: ${...path.cf0_dir}
@@ -7,7 +7,7 @@ train:
   to_mel: ${...mel}
 
 valid:
-  _target_: vocoders.datasets.NormalDataset
+  _target_: convnext_tts.datasets.normal.NormalDataset
   df_file: ${...path.valid_df_file}
   wav_dir: ${...path.wav_dir}
   cf0_dir: ${...path.cf0_dir}
