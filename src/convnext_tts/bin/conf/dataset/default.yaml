@@ -2,10 +2,14 @@ train:
   _target_: vocoders.datasets.NormalDataset
   df_file: ${...path.train_df_file}
   wav_dir: ${...path.wav_dir}
-  segment_size: 7680
+  cf0_dir: ${...path.cf0_dir}
+  vuv_dir: ${...path.vuv_dir}
+  to_mel: ${...mel}
 
 valid:
   _target_: vocoders.datasets.NormalDataset
   df_file: ${...path.valid_df_file}
   wav_dir: ${...path.wav_dir}
-  segment_size: 7680
+  cf0_dir: ${...path.cf0_dir}
+  vuv_dir: ${...path.vuv_dir}
+  to_mel: ${...mel}
