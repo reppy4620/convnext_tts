@@ -45,6 +45,8 @@ def test_model(cfg):
     print(loss_duration, loss_log_cf0, loss_vuv, loss_forwardsum, loss_bin)
     print(idx_start)
 
+    print(wav_pred)
+
 
 def test_train(cfg):
     lit_module = instantiate(cfg.lit_module, params=cfg, _recursive_=False)
@@ -59,11 +61,12 @@ def test_train(cfg):
     trainer.fit(model=lit_module)
 
 
+@torch.no_grad()
 @hydra.main(config_path="conf", version_base=None, config_name="config")
 def main(cfg):
     print(cfg)
     test_model(cfg)
-    test_train(cfg)
+    # test_train(cfg)
 
 
 if __name__ == "__main__":

@@ -1,5 +1,9 @@
 import torch.nn.functional as F
-from convnext_tts.losses.gan import discriminator_loss, feature_loss, generator_loss
+from convnext_tts.losses.gan import (
+    discriminator_loss,
+    feature_matching_loss,
+    generator_loss,
+)
 from convnext_tts.utils.dataset import ShuffleBatchSampler, batch_by_size
 from convnext_tts.utils.logging import logger
 from convnext_tts.utils.model import slice_segments
@@ -57,17 +61,19 @@ class NormalLitModule(LightningModule):
             segment_size=self.sample_segment_size,
         )
         d_real, d_fake, _, _ = self.discriminator(wav, wav_hat.detach())
-        loss_d = discriminator_loss(d_real, d_fake)
+        loss_disc = discriminator_loss(d_real, d_fake)
         if train:
             optimizer_d.zero_grad()
-            self.manual_backward(loss_d)
+            self.manual_backward(loss_disc)
             optimizer_d.step()
 
         _, d_fake, fmap_real, fmap_fake = self.discriminator(wav, wav_hat)
         loss_gen = generator_loss(d_fake)
-        loss_mel = self.loss_coef.mel * F.l1_loss(mel_hat, mel)
-        loss_fm = self.loss_coef.fm * feature_loss(fmap_real, fmap_fake)
-        loss_gan = loss_gen + loss_mel + loss_fm
+        loss_mel = F.l1_loss(mel_hat, mel)
+        loss_fm = feature_matching_loss(fmap_real, fmap_fake)
+        loss_gan = (
+            loss_gen + self.loss_coef.mel * loss_mel + self.loss_coef.fm * loss_fm
+        )
         loss_var = loss_duration + loss_cf0 + loss_vuv
         loss_align = loss_forwardsum + loss_bin
         loss_g = (
@@ -79,7 +85,7 @@ class NormalLitModule(LightningModule):
             optimizer_g.step()
 
         loss_dict = dict(
-            disc=loss_d,
+            disc=loss_disc,
             gen=loss_gen,
             mel=loss_mel,
             fm=loss_fm,

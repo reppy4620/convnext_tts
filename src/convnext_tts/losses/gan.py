@@ -1,7 +1,7 @@
 import torch
 
 
-def feature_loss(fmap_real, fmap_fake):
+def feature_matching_loss(fmap_real, fmap_fake):
     loss = 0
     for d_real, d_fake in zip(fmap_real, fmap_fake):
         for o_real, o_fake in zip(d_real, d_fake):
