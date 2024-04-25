@@ -13,4 +13,4 @@ loss_coef:
   align: 2.0
 
 frame_segment_size: 32
-sample_segment_size: 7680
+sample_segment_size: 7680  # frame_segment_size * hop_length

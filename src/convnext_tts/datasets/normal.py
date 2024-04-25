@@ -16,6 +16,8 @@ class NormalDataset(Dataset):
         self.to_mel = to_mel
 
         df = pd.read_csv(df_file)
+        # convert phone string separated space(" ") into list
+        df.iloc[:, 1] = df.iloc[:, 1].str.split()
         self.data = df.values.tolist()
 
     def __len__(self):
@@ -24,7 +26,8 @@ class NormalDataset(Dataset):
     def __getitem__(self, idx):
         fname, phoneme = self.data[idx]
         bname = Path(fname).stem
-        phoneme = text_to_sequence(phoneme.split(" "))
+
+        phoneme = text_to_sequence(phoneme)
         phoneme = torch.tensor(phoneme, dtype=torch.long)
 
         wav_file = self.wav_dir / f"{bname}.wav"
@@ -34,15 +37,23 @@ class NormalDataset(Dataset):
         wav, _ = torchaudio.load(wav_file)
         mel = self.to_mel(wav).squeeze(0)
 
-        cf0 = torch.tensor(np.load(cf0_file), dtype=torch.float)
-        vuv = torch.tensor(np.load(vuv_file), dtype=torch.float)
-        cf0 = cf0[: mel.size(-1)]
-        vuv = vuv[: mel.size(-1)]
+        cf0 = torch.tensor(np.load(cf0_file), dtype=torch.float)[: mel.size(-1)]
+        vuv = torch.tensor(np.load(vuv_file), dtype=torch.float)[: mel.size(-1)]
         return bname, phoneme, mel, cf0, vuv, wav
+
+    def num_tokens(self, idx):
+        return len(self.data[idx][1])
+
+    def ordered_indices(self):
+        lengths = np.array([len(x[1]) for x in self.data])
+        indices = np.random.permutation(len(self))
+        indices = indices[np.argsort(np.array(lengths)[indices], kind="mergesort")]
+        return indices
 
 
 class NormalCollator:
     def __call__(self, batch):
+        # I'm not sure whether using `torch.nn.utils.rnn.pad_sequence` is good or if the following method is better
         (bnames, phonemes, mels, cf0s, vuvs, wavs) = zip(*batch)
 
         B = len(bnames)

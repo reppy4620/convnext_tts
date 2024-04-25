@@ -1,6 +1,6 @@
-import torch
 import torch.nn.functional as F
 from convnext_tts.losses.gan import discriminator_loss, feature_loss, generator_loss
+from convnext_tts.utils.dataset import ShuffleBatchSampler, batch_by_size
 from convnext_tts.utils.model import slice_segments
 from hydra.utils import instantiate
 from lightning import LightningModule
@@ -26,7 +26,7 @@ class NormalLitModule(LightningModule):
 
         self.collator = instantiate(params.dataset.collator)
 
-    def forward(self, phoneme: torch.Tensor) -> torch.Tensor:
+    def forward(self, phoneme):
         return self.generator(phoneme).squeeze(1)
 
     def _handle_batch(self, batch, train=True):
@@ -98,15 +98,21 @@ class NormalLitModule(LightningModule):
 
     def train_dataloader(self):
         train_ds = instantiate(self.params.dataset.train)
+        indices = train_ds.ordered_indices()
+        batches = batch_by_size(
+            indices=indices,
+            num_tokens_fn=train_ds.num_tokens,
+            max_tokens=self.params.dataset.max_tokens,
+            required_batch_size_multiple=1,
+        )
+        batch_sampler = ShuffleBatchSampler(batches, drop_last=True, shuffle=True)
         train_dl = DataLoader(
             train_ds,
-            batch_size=self.params.train.batch_size,
-            shuffle=True,
-            drop_last=True,
             num_workers=self.params.train.num_workers,
             pin_memory=True,
             prefetch_factor=2,
             collate_fn=self.collator,
+            batch_sampler=batch_sampler,
         )
         return train_dl
 

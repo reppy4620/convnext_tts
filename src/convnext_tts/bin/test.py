@@ -1,6 +1,7 @@
 import hydra
 import torch
 from hydra.utils import instantiate
+from lightning import Trainer
 
 
 def test_model(cfg):
@@ -16,8 +17,8 @@ def test_model(cfg):
     bnames = ["a"] * B
     phoneme = torch.randint(1, 30, (B, P))
     mel = torch.randn(B, n_mels, F)
-    cf0 = torch.randn(B, 1, F)
-    vuv = torch.randint(0, 2, (B, 1, F)).float()
+    cf0 = torch.randn(B, 1, F).abs()
+    vuv = torch.ones(B, 1, F).float()
     wav = torch.rand(B, 1, S)
     phone_lengths = torch.tensor([P] * 4)
     frame_lengths = torch.tensor([F] * 4)
@@ -35,21 +36,34 @@ def test_model(cfg):
         sample_lengths,
     )
 
-    wav_pred, loss_tuple, idx_start = model.training_step(batch)
+    (
+        wav_pred,
+        (loss_duration, loss_log_cf0, loss_vuv, loss_forwardsum, loss_bin),
+        idx_start,
+    ) = model.training_step(batch)
     print(wav_pred.shape)
+    print(loss_duration, loss_log_cf0, loss_vuv, loss_forwardsum, loss_bin)
+    print(idx_start)
 
 
-def test_lit_module(cfg):
+def test_train(cfg):
     lit_module = instantiate(cfg.lit_module, params=cfg, _recursive_=False)
     train_dl = lit_module.train_dataloader()
     print(next(iter(train_dl)))
+    trainer = Trainer(
+        max_steps=1,
+        detect_anomaly=True,
+        logger=False,
+        enable_checkpointing=False,
+    )
+    trainer.fit(model=lit_module)
 
 
 @hydra.main(config_path="conf", version_base=None, config_name="config")
 def main(cfg):
     print(cfg)
     test_model(cfg)
-    test_lit_module(cfg)
+    # test_train(cfg)
 
 
 if __name__ == "__main__":

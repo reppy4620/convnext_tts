@@ -44,7 +44,6 @@ def main(cfg):
         logger=[csv_logger, tb_logger],
         max_steps=cfg.train.num_steps,
         callbacks=[ckpt_callback],
-        detect_anomaly=True,
     )
     logger.info("Start training...")
     trainer.fit(

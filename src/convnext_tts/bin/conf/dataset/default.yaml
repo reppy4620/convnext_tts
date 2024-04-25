@@ -16,3 +16,5 @@ valid:
 
 collator:
   _target_: convnext_tts.datasets.normal.NormalCollator
+
+max_tokens: 1000

@@ -59,7 +59,7 @@ class VarianceAdaptor(nn.Module):
         log_p_attn = self.alignment_module(
             text=x.transpose(1, 2),
             feats=y.transpose(1, 2),
-            x_masks=x_mask.squeeze(1).bool(),
+            x_masks=x_mask.squeeze(1).bool().logical_not(),
         )
         duration, loss_bin = viterbi_decode(log_p_attn, x_lengths, y_lengths)
         loss_forwardsum = self.forwardsum_loss(log_p_attn, x_lengths, y_lengths)
