@@ -2,6 +2,7 @@ import torch.nn as nn
 from convnext_tts.layers.convnext import ConvNeXtLayer
 
 
+# Stack of ConvNeXt layers
 class ConvNeXtModule(nn.Module):
     def __init__(self, channels, h_channels, num_layers):
         super().__init__()

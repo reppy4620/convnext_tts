@@ -3,6 +3,7 @@ import torch.nn.functional as F
 from torchaudio.transforms import MelSpectrogram
 
 
+# HiFi-GAN like MelSpectrogram transform
 class MelSpectrogramTransform(MelSpectrogram):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

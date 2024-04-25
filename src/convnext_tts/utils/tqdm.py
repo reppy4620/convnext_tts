@@ -1,3 +1,5 @@
+# Adapted from https://yururi-do.com/use-joblib-and-tqdm-to-display-progress-bar-at-batch-level/
+
 import contextlib
 from typing import Optional
 

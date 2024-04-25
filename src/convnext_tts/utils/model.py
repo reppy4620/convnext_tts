@@ -1,13 +1,17 @@
+# Some utility functions were referenced from Glow-TTS
+
 import torch
 import torch.nn.functional as F
 
 
+# Generate mask from lengths
 def sequence_mask(length):
     max_length = length.max()
     x = torch.arange(int(max_length), dtype=length.dtype, device=length.device)
     return x.unsqueeze(0) < length.unsqueeze(1)
 
 
+# Generate attention path from duration
 def generate_path(duration, mask):
     device = duration.device
     b, t_x, t_y = mask.shape
@@ -21,6 +25,7 @@ def generate_path(duration, mask):
     return path
 
 
+# Slice inputs to desired segment size
 def slice_segments(x, start_indices, segment_size):
     ret = torch.zeros(x.size(0), x.size(1), segment_size, device=x.device)
     for i in range(x.size(0)):
@@ -30,6 +35,7 @@ def slice_segments(x, start_indices, segment_size):
     return ret
 
 
+# Randomly slice inputs to desired segment size
 def rand_slice_segments(x, lengths, segment_size):
     B, _, T = x.size()
     if lengths is None:
@@ -41,6 +47,7 @@ def rand_slice_segments(x, lengths, segment_size):
     return ret, idx_start
 
 
+# Convert to log scale with zero handling
 def to_log_scale(x: torch.Tensor):
     x[x != 0] = torch.log(x[x != 0])
     return x
