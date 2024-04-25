@@ -1,7 +1,7 @@
 [project]
 name = "convnext-tts"
 version = "0.1.0"
-description = "Add your description here"
+description = "Unofficial implementation of ConvNeXt-TTS powered by lightning and Rye."
 authors = [
     { name = "reppy4620", email = "reppy4620@gmail.com" }
 ]

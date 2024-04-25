@@ -17,11 +17,15 @@ def main(cfg):
     wav_dir = Path(cfg.path.wav_dir)
     lab_dir = Path(cfg.path.lab_dir)
 
-    out_dir = Path(cfg.path.data_root)
-    if out_dir.exists() and not cfg.preprocess.overwrite:
+    data_root = Path(cfg.path.data_root)
+    if data_root.exists() and not cfg.preprocess.overwrite:
         logger.info("Skip preprocessing")
         return
-    [(out_dir / d).mkdir(parents=True, exist_ok=False) for d in ["cf0", "vuv", "df"]]
+    # Create directories
+    [
+        Path(d).mkdir(parents=True, exist_ok=False)
+        for d in [cfg.path.df_dir, cfg.path.cf0_dir, cfg.path.vuv_dir]
+    ]
 
     logger.info("Start Processing...")
     wav_files = list(sorted(wav_dir.glob("*.wav")))
@@ -57,14 +61,15 @@ def main(cfg):
             wav, sr, frame_period=cfg.mel.hop_length / cfg.mel.sample_rate * 1e3
         )
         vuv = (f0 != 0).astype(np.float32)
+        # linear interpolation
         x = np.arange(len(f0))
         idx = np.nonzero(f0)
         cf0 = np.interp(x, x[idx], f0[idx])
-        np.save(out_dir / f"cf0/{bname}.npy", cf0)
-        np.save(out_dir / f"vuv/{bname}.npy", vuv)
+        np.save(f"{cfg.path.cf0_dir}/{bname}.npy", cf0)
+        np.save(f"{cfg.path.vuv_dir}/{bname}.npy", vuv)
 
     with tqdm_joblib(len(wav_files)):
-        Parallel(n_jobs=4)(delayed(_process)(f) for f in wav_files)
+        Parallel(n_jobs=cfg.preprocess.n_jobs)(delayed(_process)(f) for f in wav_files)
 
 
 if __name__ == "__main__":

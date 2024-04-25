@@ -10,8 +10,8 @@ class ConvNeXtLayer(nn.Module):
             channels, channels, kernel_size=7, padding=3, groups=channels
         )
         self.norm = nn.LayerNorm(channels)
-        self.pw_conv1 = nn.Linear(channels, h_channels)
-        self.pw_conv2 = nn.Linear(h_channels, channels)
+        self.pw_layer1 = nn.Linear(channels, h_channels)
+        self.pw_layer2 = nn.Linear(h_channels, channels)
         self.scale = nn.Parameter(
             torch.full(size=(channels,), fill_value=scale), requires_grad=True
         )
@@ -21,10 +21,10 @@ class ConvNeXtLayer(nn.Module):
         x = self.dw_conv(x)
         x = x.transpose(1, 2)
         x = self.norm(x)
-        x = self.pw_conv1(x)
+        x = self.pw_layer1(x)
         x = F.gelu(x)
-        x = self.pw_conv2(x)
-        x = self.scale * x
+        x = self.pw_layer2(x)
+        x = x * self.scale
         x = x.transpose(1, 2)
-        x = res + x
+        x = x + res
         return x

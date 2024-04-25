@@ -9,3 +9,4 @@ wheels/
 # venv
 .venv
 exp/*/out*
+exp/*/lightning_logs

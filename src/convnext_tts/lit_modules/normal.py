@@ -1,6 +1,7 @@
 import torch.nn.functional as F
 from convnext_tts.losses.gan import discriminator_loss, feature_loss, generator_loss
 from convnext_tts.utils.dataset import ShuffleBatchSampler, batch_by_size
+from convnext_tts.utils.logging import logger
 from convnext_tts.utils.model import slice_segments
 from hydra.utils import instantiate
 from lightning import LightningModule
@@ -20,6 +21,12 @@ class NormalLitModule(LightningModule):
 
         self.generator = instantiate(params.generator)
         self.discriminator = instantiate(params.discriminator)
+        logger.info(
+            f"Generator: {sum(p.numel() for p in self.generator.parameters()) / 1e6:.3f}M"
+        )
+        logger.info(
+            f"Discriminator: {sum(p.numel() for p in self.discriminator.parameters()) / 1e6:.3f}M"
+        )
 
         self.to_mel = instantiate(params.mel)
         self.hop_length = params.mel.hop_length
