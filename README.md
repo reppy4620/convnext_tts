@@ -1,7 +1,7 @@
 # convnext-tts
 
 Unofficial implementation of ConvNeXt-TTS([paper](https://ieeexplore.ieee.org/document/10446890)) for my experiment.
-
+The model architecture has been slightly modified.
 
 # Usage
 
@@ -11,3 +11,5 @@ Unofficial implementation of ConvNeXt-TTS([paper](https://ieeexplore.ieee.org/do
 3. Run `exp/jsut/run.sh`.
 
 Now I'm running it, but it seems likely to fail....
+
+Still under development...

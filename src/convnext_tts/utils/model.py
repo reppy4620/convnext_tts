@@ -27,11 +27,11 @@ def generate_path(duration, mask):
 
 # Slice inputs to desired segment size
 def slice_segments(x, start_indices, segment_size):
-    ret = torch.zeros(x.size(0), x.size(1), segment_size, device=x.device)
+    ret = torch.zeros_like(x[:, :, :segment_size])
     for i in range(x.size(0)):
         start = start_indices[i]
         end = start + segment_size
-        ret[i, :, :] = x[i, :, start:end]
+        ret[i] = x[i, :, start:end]
     return ret
 
 
@@ -41,8 +41,7 @@ def rand_slice_segments(x, lengths, segment_size):
     if lengths is None:
         lengths = T
     start_max = lengths - segment_size + 1
-    idx_start = (torch.rand([B]).to(device=x.device) * start_max).long()
-    idx_start = idx_start.clamp(min=0)
+    idx_start = (torch.rand([B], device=x.device) * start_max).long()
     ret = slice_segments(x, idx_start, segment_size)
     return ret, idx_start
 

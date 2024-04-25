@@ -22,4 +22,5 @@ class WaveNeXt(nn.Module):
         x = self.norm_last(x.transpose(1, 2)).transpose(1, 2)
         o = self.out_conv(x)
         o = o.reshape(o.size(0), 1, -1)
+        o = o.tanh()
         return o
