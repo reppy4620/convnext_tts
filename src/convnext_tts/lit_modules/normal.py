@@ -24,6 +24,8 @@ class NormalLitModule(LightningModule):
         self.to_mel = instantiate(params.mel)
         self.hop_length = params.mel.hop_length
 
+        self.collator = instantiate(params.dataset.collator)
+
     def forward(self, phoneme: torch.Tensor) -> torch.Tensor:
         return self.generator(phoneme).squeeze(1)
 
@@ -32,9 +34,9 @@ class NormalLitModule(LightningModule):
 
         (
             wav_hat,
-            (loss_duration, loss_pitch, loss_forwardsum, loss_bin),
+            (loss_duration, loss_cf0, loss_vuv, loss_forwardsum, loss_bin),
             idx_start,
-        ) = self.generator(batch)
+        ) = self.generator.training_step(batch)
         mel_hat = self.to_mel(wav_hat.squeeze(1))
 
         mel = batch[2]
@@ -59,7 +61,7 @@ class NormalLitModule(LightningModule):
         loss_mel = self.loss_coef.mel * F.l1_loss(mel_hat, mel)
         loss_fm = self.loss_coef.fm * feature_loss(fmap_real, fmap_fake)
         loss_gan = loss_gen + loss_mel + loss_fm
-        loss_var = loss_duration + loss_pitch
+        loss_var = loss_duration + loss_cf0 + loss_vuv
         loss_align = loss_forwardsum + loss_bin
         loss_g = (
             loss_gan + self.loss_coef.var * loss_var + self.loss_coef.align * loss_align
@@ -75,7 +77,8 @@ class NormalLitModule(LightningModule):
             mel=loss_mel,
             fm=loss_fm,
             dur=loss_duration,
-            pitch=loss_pitch,
+            cf0=loss_cf0,
+            vuv=loss_vuv,
             fowardsum=loss_forwardsum,
             bin=loss_bin,
         )
@@ -103,6 +106,7 @@ class NormalLitModule(LightningModule):
             num_workers=self.params.train.num_workers,
             pin_memory=True,
             prefetch_factor=2,
+            collate_fn=self.collator,
         )
         return train_dl
 
@@ -115,6 +119,7 @@ class NormalLitModule(LightningModule):
             drop_last=False,
             num_workers=self.params.train.num_workers,
             pin_memory=True,
+            collate_fn=self.collator,
         )
         return val_dl
 

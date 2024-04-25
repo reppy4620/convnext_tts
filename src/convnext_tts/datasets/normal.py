@@ -25,6 +25,7 @@ class NormalDataset(Dataset):
         fname, phoneme = self.data[idx]
         bname = Path(fname).stem
         phoneme = text_to_sequence(phoneme.split(" "))
+        phoneme = torch.tensor(phoneme, dtype=torch.long)
 
         wav_file = self.wav_dir / f"{bname}.wav"
         cf0_file = self.cf0_dir / f"{bname}.npy"
@@ -82,15 +83,3 @@ class NormalCollator:
             frame_lengths,
             sample_lengths,
         )
-
-
-class NormalBatchIdx:
-    bname = 0
-    phoneme = 1
-    mel = 2
-    cf0 = 3
-    vuv = 4
-    wav = 5
-    phone_lengths = 6
-    frame_lengths = 7
-    sample_lengths = 8

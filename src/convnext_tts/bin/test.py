@@ -39,10 +39,17 @@ def test_model(cfg):
     print(wav_pred.shape)
 
 
+def test_lit_module(cfg):
+    lit_module = instantiate(cfg.lit_module, params=cfg, _recursive_=False)
+    train_dl = lit_module.train_dataloader()
+    print(next(iter(train_dl)))
+
+
 @hydra.main(config_path="conf", version_base=None, config_name="config")
 def main(cfg):
     print(cfg)
     test_model(cfg)
+    test_lit_module(cfg)
 
 
 if __name__ == "__main__":

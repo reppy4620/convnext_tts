@@ -13,3 +13,6 @@ valid:
   cf0_dir: ${...path.cf0_dir}
   vuv_dir: ${...path.vuv_dir}
   to_mel: ${...mel}
+
+collator:
+  _target_: convnext_tts.datasets.normal.NormalCollator

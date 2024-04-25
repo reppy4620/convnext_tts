@@ -3,7 +3,7 @@ from pathlib import Path
 import hydra
 from convnext_tts.utils.logging import logger
 from hydra.utils import instantiate
-from lightning import Trainer, seed_everything
+from lightning import LightningModule, Trainer, seed_everything
 from lightning.pytorch.callbacks import ModelCheckpoint
 from lightning.pytorch.loggers import CSVLogger, TensorBoardLogger
 from omegaconf import OmegaConf
@@ -26,7 +26,9 @@ def main(cfg):
 
     seed_everything(cfg.train.seed)
 
-    lit_module = instantiate(cfg.lit_module, params=cfg, _recursive_=False)
+    lit_module: LightningModule = instantiate(
+        cfg.lit_module, params=cfg, _recursive_=False
+    )
 
     csv_logger = CSVLogger(save_dir=out_dir, name="logs/csv", version=1)
     tb_logger = TensorBoardLogger(save_dir=out_dir, name="logs/tensorboard", version=1)
@@ -42,6 +44,7 @@ def main(cfg):
         logger=[csv_logger, tb_logger],
         max_steps=cfg.train.num_steps,
         callbacks=[ckpt_callback],
+        detect_anomaly=True,
     )
     logger.info("Start training...")
     trainer.fit(
