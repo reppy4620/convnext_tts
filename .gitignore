@@ -8,4 +8,4 @@ wheels/
 
 # venv
 .venv
-recipes/*/out*
+exp/*/out*
