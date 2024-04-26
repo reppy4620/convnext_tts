@@ -44,7 +44,7 @@ class NormalLitModule(LightningModule):
     def forward(self, phoneme):
         return self.generator(phoneme).squeeze(1)
 
-    def _handle_batch(self, batch, train=True):
+    def _handle_batch(self, batch, train):
         optimizer_g, optimizer_d = self.optimizers()
 
         (
@@ -104,7 +104,7 @@ class NormalLitModule(LightningModule):
         return mel_hat, wav_hat, p_attn
 
     def training_step(self, batch):
-        _ = self._handle_batch(batch, train=True)
+        self._handle_batch(batch, train=True)
 
     def on_train_epoch_end(self):
         scheduler_g, scheduler_d = self.lr_schedulers()
@@ -134,10 +134,13 @@ class NormalLitModule(LightningModule):
         tb_logger.experiment.add_audio(
             "wav", wav, self.current_epoch, sample_rate=self.sample_rate
         )
+        plt.close()
         fig_path = plt.figure(figsize=(10, 5))
-        plt.imshow(p_attn.detach().cpu().numpy(), "gray", aspect="auto", origin="lower")
+        plt.imshow(p_attn.detach().cpu().numpy(), aspect="auto", origin="lower")
         tb_logger.experiment.add_figure("p_attn", fig_path, self.current_epoch)
+        plt.close()
         self.valid_save_data.clear()
+        del mel, wav, p_attn
 
     def train_dataloader(self):
         train_ds = instantiate(self.params.dataset.train)
