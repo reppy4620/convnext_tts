@@ -53,7 +53,9 @@ vocoder:
   in_channels: ${..decoder.channels}
   channels: 512
   h_channels: 1536
+  n_fft: ${...mel.n_fft}
   hop_length: ${...mel.hop_length}
   num_layers: 8
+  apply_tanh: true
 
 frame_segment_size: ${..train.frame_segment_size}
