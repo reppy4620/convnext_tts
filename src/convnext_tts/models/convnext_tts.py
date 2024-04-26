@@ -39,6 +39,7 @@ class ConvNeXtTTS(nn.Module):
             duration,
             (log_duration_pred, log_cf0_pred, vuv_pred),
             (loss_forwardsum, loss_bin),
+            p_attn,
         ) = self.variance_adaptor(
             x=x,
             y=mel,
@@ -63,6 +64,7 @@ class ConvNeXtTTS(nn.Module):
             wav_pred,
             (loss_duration, loss_log_cf0, loss_vuv, loss_forwardsum, loss_bin),
             idx_start,
+            p_attn,
         )
 
     def forward(self, phoneme):

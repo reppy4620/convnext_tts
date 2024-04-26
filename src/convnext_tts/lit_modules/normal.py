@@ -1,3 +1,4 @@
+import matplotlib.pyplot as plt
 import torch.nn.functional as F
 from convnext_tts.losses.gan import (
     discriminator_loss,
@@ -33,9 +34,12 @@ class NormalLitModule(LightningModule):
         )
 
         self.to_mel = instantiate(params.mel)
+        self.sample_rate = params.mel.sample_rate
         self.hop_length = params.mel.hop_length
 
         self.collator = instantiate(params.dataset.collator)
+
+        self.valid_save_data = dict()
 
     def forward(self, phoneme):
         return self.generator(phoneme).squeeze(1)
@@ -47,14 +51,14 @@ class NormalLitModule(LightningModule):
             wav_hat,
             (loss_duration, loss_cf0, loss_vuv, loss_forwardsum, loss_bin),
             idx_start,
+            p_attn,
         ) = self.generator.training_step(batch)
         mel_hat = self.to_mel(wav_hat.squeeze(1))
 
-        mel = batch[2]
+        _, _, mel, _, _, wav, _, _, _ = batch
         mel = slice_segments(
             mel, start_indices=idx_start, segment_size=self.frame_segment_size
         )
-        wav = batch[5]
         wav = slice_segments(
             wav,
             start_indices=idx_start * self.hop_length,
@@ -95,19 +99,45 @@ class NormalLitModule(LightningModule):
             fowardsum=loss_forwardsum,
             bin=loss_bin,
         )
-
         self.log_dict(loss_dict, prog_bar=True)
 
+        return mel_hat, wav_hat, p_attn
+
     def training_step(self, batch):
-        self._handle_batch(batch, train=True)
+        _ = self._handle_batch(batch, train=True)
 
     def on_train_epoch_end(self):
         scheduler_g, scheduler_d = self.lr_schedulers()
         scheduler_g.step()
         scheduler_d.step()
 
+        self.trainer.fit_loop
+
     def validation_step(self, batch, batch_idx):
-        self._handle_batch(batch, train=False)
+        mels, wavs, p_attns = self._handle_batch(batch, train=False)
+        if batch_idx == 0:
+            self.valid_save_data["mel"] = mels[0].squeeze()
+            self.valid_save_data["wav"] = wavs[0].squeeze()
+            self.valid_save_data["p_attn"] = p_attns[0].squeeze()
+
+    def on_validation_epoch_end(self):
+        logger.info("Logging validation data...")
+        tb_logger = self.loggers[1]
+
+        mel = self.valid_save_data["mel"]
+        wav = self.valid_save_data["wav"].unsqueeze(0)
+        p_attn = self.valid_save_data["p_attn"]
+
+        fig_mel = plt.figure(figsize=(10, 5))
+        plt.imshow(mel.detach().cpu().numpy(), aspect="auto", origin="lower")
+        tb_logger.experiment.add_figure("mel", fig_mel, self.current_epoch)
+        tb_logger.experiment.add_audio(
+            "wav", wav, self.current_epoch, sample_rate=self.sample_rate
+        )
+        fig_path = plt.figure(figsize=(10, 5))
+        plt.imshow(p_attn.detach().cpu().numpy(), "gray", aspect="auto", origin="lower")
+        tb_logger.experiment.add_figure("p_attn", fig_path, self.current_epoch)
+        self.valid_save_data.clear()
 
     def train_dataloader(self):
         train_ds = instantiate(self.params.dataset.train)

@@ -21,11 +21,17 @@ attrs==23.2.0
     # via aiohttp
 cffi==1.16.0
     # via soundfile
+contourpy==1.2.1
+    # via matplotlib
+cycler==0.12.1
+    # via matplotlib
 cython==3.0.10
     # via pyworld
 filelock==3.13.4
     # via torch
     # via triton
+fonttools==4.51.0
+    # via matplotlib
 frozenlist==1.4.1
     # via aiohttp
     # via aiosignal
@@ -43,6 +49,8 @@ jinja2==3.1.3
     # via torch
 joblib==1.4.0
     # via convnext-tts
+kiwisolver==1.4.5
+    # via matplotlib
 lightning==2.2.3
     # via convnext-tts
 lightning-utilities==0.11.2
@@ -58,6 +66,8 @@ markdown==3.6
 markupsafe==2.1.5
     # via jinja2
     # via werkzeug
+matplotlib==3.8.4
+    # via convnext-tts
 mpmath==1.3.0
     # via sympy
 multidict==6.0.5
@@ -68,7 +78,9 @@ networkx==3.3
 numba==0.59.1
     # via convnext-tts
 numpy==1.26.4
+    # via contourpy
     # via lightning
+    # via matplotlib
     # via numba
     # via pandas
     # via pytorch-lightning
@@ -110,15 +122,22 @@ packaging==24.0
     # via hydra-core
     # via lightning
     # via lightning-utilities
+    # via matplotlib
     # via pytorch-lightning
     # via torchmetrics
 pandas==2.2.2
     # via convnext-tts
+pillow==10.3.0
+    # via convnext-tts
+    # via matplotlib
 protobuf==5.26.1
     # via tensorboard
 pycparser==2.22
     # via cffi
+pyparsing==3.1.2
+    # via matplotlib
 python-dateutil==2.9.0.post0
+    # via matplotlib
     # via pandas
 pytorch-lightning==2.2.3
     # via lightning

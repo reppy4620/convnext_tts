@@ -1,4 +1,5 @@
 import hydra
+import matplotlib.pyplot as plt
 import torch
 from hydra.utils import instantiate
 from lightning import Trainer
@@ -40,12 +41,14 @@ def test_model(cfg):
         wav_pred,
         (loss_duration, loss_log_cf0, loss_vuv, loss_forwardsum, loss_bin),
         idx_start,
+        attn_path,
     ) = model.training_step(batch)
     print(wav_pred.shape)
     print(loss_duration, loss_log_cf0, loss_vuv, loss_forwardsum, loss_bin)
     print(idx_start)
 
     print(wav_pred)
+    print(attn_path[0])
 
 
 def test_train(cfg):

@@ -6,6 +6,60 @@ from convnext_tts.losses.forwardsum import ForwardSumLoss
 from convnext_tts.utils.model import generate_path, sequence_mask
 
 
+# adapted from https://github.com/espnet/espnet/blob/master/espnet2/gan_tts/jets/length_regulator.py
+class GaussianUpsampling(torch.nn.Module):
+    """Gaussian upsampling with fixed temperature as in:
+
+    https://arxiv.org/abs/2010.04301
+
+    """
+
+    def __init__(self, delta=0.1):
+        super().__init__()
+        self.delta = delta
+
+    def forward(self, hs, ds, h_masks=None, d_masks=None):
+        """Upsample hidden states according to durations.
+
+        Args:
+            hs (Tensor): Batched hidden state to be expanded (B, T_text, adim).
+            ds (Tensor): Batched token duration (B, T_text).
+            h_masks (Tensor): Mask tensor (B, T_feats).
+            d_masks (Tensor): Mask tensor (B, T_text).
+
+        Returns:
+            Tensor: Expanded hidden state (B, T_feat, adim).
+
+        """
+        B = ds.size(0)
+        device = ds.device
+
+        if ds.sum() == 0:
+            # NOTE(kan-bayashi): This case must not be happened in teacher forcing.
+            #   It will be happened in inference with a bad duration predictor.
+            #   So we do not need to care the padded sequence case here.
+            ds[ds.sum(dim=1).eq(0)] = 1
+
+        if h_masks is None:
+            T_feats = ds.sum().int()
+        else:
+            T_feats = h_masks.size(-1)
+        t = torch.arange(0, T_feats).unsqueeze(0).repeat(B, 1).to(device).float()
+        if h_masks is not None:
+            t = t * h_masks.float()
+
+        c = ds.cumsum(dim=-1) - ds / 2
+        energy = -1 * self.delta * (t.unsqueeze(-1) - c.unsqueeze(1)) ** 2
+        if d_masks is not None:
+            energy = energy.masked_fill(
+                ~(d_masks.unsqueeze(1).repeat(1, T_feats, 1)), -float("inf")
+            )
+
+        p_attn = torch.softmax(energy, dim=2)  # (B, T_feats, T_text)
+        hs = torch.matmul(p_attn, hs)
+        return hs, p_attn
+
+
 class VariancePredictor(nn.Module):
     def __init__(self, channels, out_channels, num_layers, detach=False):
         super().__init__()
@@ -44,6 +98,8 @@ class VarianceAdaptor(nn.Module):
         self.pitch_emb = pitch_emb
         self.forwardsum_loss = forwardsum_loss
 
+        self.length_regulator = GaussianUpsampling()
+
     def forward(self, x, y, log_cf0, x_mask, y_mask, x_lengths, y_lengths):
         # P: phoneme level, T: frame level
         # x: (B, C, P)
@@ -59,14 +115,20 @@ class VarianceAdaptor(nn.Module):
         log_p_attn = self.alignment_module(
             text=x.transpose(1, 2),
             feats=y.transpose(1, 2),
+            text_lengths=x_lengths,
+            feats_lengths=y_lengths,
             x_masks=x_mask.squeeze(1).bool().logical_not(),
         )
         duration, loss_bin = viterbi_decode(log_p_attn, x_lengths, y_lengths)
         loss_forwardsum = self.forwardsum_loss(log_p_attn, x_lengths, y_lengths)
-        duration = duration.unsqueeze(1)
-        path_mask = x_mask.unsqueeze(-1) * y_mask.unsqueeze(2)
-        attn_path = generate_path(duration.squeeze(1), path_mask.squeeze(1))
-        x_frame = x @ attn_path
+        x_frame, p_attn = self.length_regulator(
+            hs=x.transpose(1, 2),
+            ds=duration,
+            h_masks=y_mask.squeeze(1).bool(),
+            d_masks=x_mask.squeeze(1).bool(),
+        )
+        x_frame = x_frame.transpose(1, 2)
+
         assert x_frame.shape[-1] == y.shape[-1], f"{x_frame.shape} != {y.shape}"
 
         log_cf0_vuv_pred = self.pitch_predictor(x_frame, y_mask)
@@ -79,6 +141,7 @@ class VarianceAdaptor(nn.Module):
             duration,
             (log_duration_pred, log_cf0_pred, vuv_pred),
             (loss_bin, loss_forwardsum),
+            p_attn,
         )
 
     def infer(self, x, x_mask):
@@ -86,7 +149,7 @@ class VarianceAdaptor(nn.Module):
         duration = log_duration.exp().round().long()
 
         y_lengths = duration.sum(dim=[1, 2])
-        y_mask = sequence_mask(y_lengths).unsqueeze(1).to(x.device)
+        y_mask = sequence_mask(y_lengths).unsqueeze(1).to(x.dtype)
         path_mask = x_mask.unsqueeze(-1) * y_mask.unsqueeze(2)
         attn_path = generate_path(duration.squeeze(1), path_mask.squeeze(1))
 
