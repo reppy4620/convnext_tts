@@ -1,7 +1,7 @@
 _target_: convnext_tts.transforms.mel.MelSpectrogramTransform
 sample_rate: 24000
 n_fft: 1024
-win_length: 512
+win_length: 1024
 hop_length: 240
 power: 1
 f_min: 63

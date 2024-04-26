@@ -95,6 +95,6 @@ class VarianceAdaptor(nn.Module):
         log_cf0, vuv = log_cf0_vuv.split(1, dim=1)
         vuv = vuv.sigmoid()
         vuv = torch.where(vuv < 0.5, 0.0, 1.0)
-        pitch_emb = self.pitch_emb(torch.zeros_like(log_cf0)) * y_mask
+        pitch_emb = self.pitch_emb(log_cf0) * y_mask
         x_frame = x_frame + pitch_emb
-        return x_frame, (duration, log_cf0, vuv)
+        return x_frame, y_mask, (duration, log_cf0, vuv)

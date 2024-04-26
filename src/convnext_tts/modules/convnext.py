@@ -11,7 +11,9 @@ class ConvNeXtModule(nn.Module):
             [ConvNeXtLayer(channels, h_channels, scale) for _ in range(num_layers)]
         )
 
-    def forward(self, x, mask):
+    def forward(self, x, mask=None):
         for layer in self.layers:
-            x = layer(x) * mask
+            x = layer(x)
+            if mask is not None:
+                x = x * mask
         return x

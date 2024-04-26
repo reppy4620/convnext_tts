@@ -71,7 +71,9 @@ class ConvNeXtTTS(nn.Module):
         phone_mask = sequence_mask(phone_lengths)
         x = self.embedding(phoneme, phone_mask)
         x = self.encoder(x, phone_mask)
-        x_frame, (duration, log_cf0, vuv) = self.variance_adaptor.infer(x, phone_mask)
-        x_frame = self.decoder(x, phone_mask)
+        x_frame, frame_mask, (duration, log_cf0, vuv) = self.variance_adaptor.infer(
+            x=x, x_mask=phone_mask
+        )
+        x_frame = self.decoder(x, frame_mask)
         wav = self.vocoder(x_frame)
         return wav, (duration, log_cf0, vuv)

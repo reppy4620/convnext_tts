@@ -19,12 +19,14 @@ class ConvNeXtLayer(nn.Module):
     def forward(self, x):
         res = x
         x = self.dw_conv(x)
+        # (B, C, T) -> (B, T, C)
         x = x.transpose(1, 2)
         x = self.norm(x)
         x = self.pw_layer1(x)
         x = F.gelu(x)
         x = self.pw_layer2(x)
         x = x * self.scale
+        # (B, T, C) -> (B, C, T)
         x = x.transpose(1, 2)
         x = x + res
         return x
