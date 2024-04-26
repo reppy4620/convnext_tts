@@ -1,3 +1,7 @@
+# adapted from https://github.com/espnet/espnet/blob/master/espnet2/gan_tts/jets/loss.py
+# Copyright 2022 Dan Lim
+#  Apache 2.0  (http://www.apache.org/licenses/LICENSE-2.0)
+
 import numpy as np
 import torch
 import torch.nn.functional as F

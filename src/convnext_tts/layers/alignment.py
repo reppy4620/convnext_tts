@@ -1,3 +1,4 @@
+# adapted from https://github.com/espnet/espnet/blob/master/espnet2/gan_tts/jets/alignments.py
 # Copyright 2022 Dan Lim
 #  Apache 2.0  (http://www.apache.org/licenses/LICENSE-2.0)
 

@@ -7,6 +7,8 @@ from convnext_tts.utils.model import generate_path, sequence_mask
 
 
 # adapted from https://github.com/espnet/espnet/blob/master/espnet2/gan_tts/jets/length_regulator.py
+# Copyright 2022 Dan Lim
+#  Apache 2.0  (http://www.apache.org/licenses/LICENSE-2.0)
 class GaussianUpsampling(torch.nn.Module):
     """Gaussian upsampling with fixed temperature as in:
 
