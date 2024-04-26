@@ -1,6 +1,6 @@
 # convnext-tts
 
-Unofficial implementation of ConvNeXt-TTS([paper](https://ieeexplore.ieee.org/document/10446890)) for my experiment.
+Unofficial implementation of ConvNeXt-TTS([paper](https://ieeexplore.ieee.org/document/10446890)) for my experiment.  
 The model architecture has been slightly modified.
 
 # Usage
