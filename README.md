@@ -13,3 +13,5 @@ The model architecture has been slightly modified.
 I found that training WaveNeXt is slower than other vocoder models because the model must adjust the edges of each frame in the last linear layer.  
 Therefore, when using WaveNeXt for end-to-end learning, the discriminator may become too strong in the early stages of training, so it might be necessary to perform some preliminary training beforehand like JETS.  
 Please note that this issue may be caused by my implementation or data, and therefore it should not be generalized.
+
+Still under development...

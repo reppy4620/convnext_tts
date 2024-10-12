@@ -90,6 +90,8 @@ class NormalLitModule(LightningModule):
             optimizer_g.step()
 
         loss_dict = dict(
+            it=self.global_step,
+            b=wav_hat.shape[0],
             disc=loss_disc,
             gen=loss_gen,
             mel=loss_mel,
