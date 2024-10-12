@@ -112,13 +112,6 @@ class NormalLitModule(LightningModule):
         scheduler_g.step()
         scheduler_d.step()
 
-        self.trainer.fit_loop
-
-        logger.info(
-            "Train: "
-            + ", ".join(f"{k}={v:.3f}" for k, v in self.trainer.logged_metrics.items())
-        )
-
     def validation_step(self, batch, batch_idx):
         mels, wavs, p_attns = self._handle_batch(batch, train=False)
         if batch_idx == 0:
