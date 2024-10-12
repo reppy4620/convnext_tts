@@ -114,34 +114,59 @@ class NormalLitModule(LightningModule):
 
         self.trainer.fit_loop
 
+        logger.info(
+            "Train: "
+            + ", ".join(f"{k}={v:.3f}" for k, v in self.trainer.logged_metrics.items())
+        )
+
     def validation_step(self, batch, batch_idx):
         mels, wavs, p_attns = self._handle_batch(batch, train=False)
         if batch_idx == 0:
-            self.valid_save_data["mel"] = mels[0].squeeze()
-            self.valid_save_data["wav"] = wavs[0].squeeze()
-            self.valid_save_data["p_attn"] = p_attns[0].squeeze()
+            self.valid_save_data["mel"] = mels[0].squeeze().detach().cpu()
+            self.valid_save_data["wav"] = wavs[0].squeeze().detach().cpu()
+            self.valid_save_data["p_attn"] = p_attns[0].squeeze().detach().cpu()
 
     def on_validation_epoch_end(self):
         logger.info("Logging validation data...")
         tb_logger = self.loggers[1]
+        wandb_logger = self.loggers[2]
 
         mel = self.valid_save_data["mel"]
         wav = self.valid_save_data["wav"].unsqueeze(0)
         p_attn = self.valid_save_data["p_attn"]
 
+        # Log to tensorboard
+        # audio
         fig_mel = plt.figure(figsize=(10, 5))
-        plt.imshow(mel.detach().cpu().numpy(), aspect="auto", origin="lower")
+        plt.imshow(mel.numpy(), aspect="auto", origin="lower")
         tb_logger.experiment.add_figure("mel", fig_mel, self.current_epoch)
         tb_logger.experiment.add_audio(
             "wav", wav, self.current_epoch, sample_rate=self.sample_rate
         )
         plt.close()
+        # attention
         fig_path = plt.figure(figsize=(10, 5))
-        plt.imshow(p_attn.detach().cpu().numpy(), aspect="auto", origin="lower")
+        plt.imshow(p_attn.numpy(), aspect="auto", origin="lower")
         tb_logger.experiment.add_figure("p_attn", fig_path, self.current_epoch)
         plt.close()
+
+        # Log to wandb
+        # audio
+        wandb_logger.log_image(key="mel", images=[mel.flip(0).numpy()])
+        wandb_logger.log_audio(
+            key="samples",
+            audios=[wav.numpy().reshape(-1)],
+            sample_rate=[self.sample_rate],
+        )
+        wandb_logger.log_image(key="p_attn", images=[p_attn.flip(0).numpy()])
+
         self.valid_save_data.clear()
         del mel, wav, p_attn
+
+        logger.info(
+            "Valid: "
+            + ", ".join(f"{k}={v:.3f}" for k, v in self.trainer.logged_metrics.items())
+        )
 
     def train_dataloader(self):
         train_ds = instantiate(self.params.dataset.train)

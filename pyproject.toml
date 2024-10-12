@@ -19,6 +19,7 @@ dependencies = [
     "wandb>=0.18.3",
     "numpy<2",
     "jaxtyping>=0.2.34",
+    "rich>=13.9.2",
 ]
 readme = "README.md"
 requires-python = ">= 3.10"
