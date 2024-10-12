@@ -1,11 +1,13 @@
+from pprint import pprint
+
 import hydra
-import matplotlib.pyplot as plt
 import torch
 from hydra.utils import instantiate
 from lightning import Trainer
 
 
 def test_model(cfg):
+    pprint(cfg)
     model = instantiate(cfg.generator)
     hop_length = cfg.mel.hop_length
     n_mels = cfg.mel.n_mels
@@ -69,7 +71,7 @@ def test_train(cfg):
 def main(cfg):
     print(cfg)
     test_model(cfg)
-    test_train(cfg)
+    # test_train(cfg)
 
 
 if __name__ == "__main__":

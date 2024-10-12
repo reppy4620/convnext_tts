@@ -1,5 +1,9 @@
 import matplotlib.pyplot as plt
 import torch.nn.functional as F
+from hydra.utils import instantiate
+from lightning import LightningModule
+from torch.utils.data import DataLoader
+
 from convnext_tts.losses.gan import (
     discriminator_loss,
     feature_matching_loss,
@@ -8,9 +12,6 @@ from convnext_tts.losses.gan import (
 from convnext_tts.utils.dataset import ShuffleBatchSampler, batch_by_size
 from convnext_tts.utils.logging import logger
 from convnext_tts.utils.model import slice_segments
-from hydra.utils import instantiate
-from lightning import LightningModule
-from torch.utils.data import DataLoader
 
 
 class NormalLitModule(LightningModule):

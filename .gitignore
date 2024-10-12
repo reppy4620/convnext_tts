@@ -10,3 +10,6 @@ wheels/
 .venv
 exp/*/out*
 exp/*/lightning_logs
+
+# user
+**/out*

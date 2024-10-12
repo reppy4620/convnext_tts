@@ -18,8 +18,8 @@ hydra:
   output_subdir: null
 
 preprocess:
-  overwrite: false
-  n_jobs: 4
+  overwrite: true
+  n_jobs: 8
 
 train:
   out_dir: ./out

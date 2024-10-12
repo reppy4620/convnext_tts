@@ -1,11 +1,23 @@
+import random
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from convnext_tts.utils.typing import Float
+
 
 class ConvNeXtLayer(nn.Module):
-    def __init__(self, channels, h_channels, scale):
+    def __init__(
+        self,
+        channels: int,
+        h_channels: int,
+        scale: float,
+        stochastic_depth_rate: float = 0.2,
+    ) -> None:
         super().__init__()
+        self.stochastic_depth_rate = stochastic_depth_rate
+
         self.dw_conv = nn.Conv1d(
             channels, channels, kernel_size=7, padding=3, groups=channels
         )
@@ -16,7 +28,7 @@ class ConvNeXtLayer(nn.Module):
             torch.full(size=(channels,), fill_value=scale), requires_grad=True
         )
 
-    def forward(self, x):
+    def forward(self, x: Float["B C T"]) -> Float["B C T"]:
         res = x
         x = self.dw_conv(x)
         # (B, C, T) -> (B, T, C)
@@ -28,5 +40,8 @@ class ConvNeXtLayer(nn.Module):
         x = x * self.scale
         # (B, T, C) -> (B, C, T)
         x = x.transpose(1, 2)
+        if self.training and self.stochastic_depth_rate > 0:
+            if random.random() < self.stochastic_depth_rate:
+                return res
         x = x + res
         return x

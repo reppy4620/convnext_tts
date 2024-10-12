@@ -1,4 +1,4 @@
-_target_: convnext_tts.models.discriminator.GeneralDiscriminator
+_target_: convnext_tts.models.discriminator.CombinedDiscriminator
 discriminators:
   - _target_: convnext_tts.models.discriminator.MultiPeriodDiscriminator
   - _target_: convnext_tts.models.discriminator.MultiResolutionDiscriminator

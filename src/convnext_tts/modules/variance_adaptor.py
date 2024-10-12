@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+
 from convnext_tts.layers.alignment import AlignmentModule, viterbi_decode
 from convnext_tts.layers.convnext import ConvNeXtLayer
 from convnext_tts.losses.forwardsum import ForwardSumLoss

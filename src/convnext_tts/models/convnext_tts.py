@@ -1,9 +1,10 @@
 import torch.nn as nn
+
 from convnext_tts.layers.embedding import EmbeddingLayer
 from convnext_tts.losses.masked import masked_l1_loss, masked_mse_loss
 from convnext_tts.modules.convnext import ConvNeXtModule
 from convnext_tts.modules.variance_adaptor import VarianceAdaptor
-from convnext_tts.modules.wavenext import WaveNeXt
+from convnext_tts.modules.vocoder import Vocoder
 from convnext_tts.utils.model import rand_slice_segments, sequence_mask, to_log_scale
 
 
@@ -14,7 +15,7 @@ class ConvNeXtTTS(nn.Module):
         encoder: ConvNeXtModule,
         variance_adaptor: VarianceAdaptor,
         decoder: ConvNeXtModule,
-        vocoder: WaveNeXt,
+        vocoder: Vocoder,
         frame_segment_size: int,
     ):
         super().__init__()

@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.nn.utils.parametrizations import weight_norm
 
-LRELU_SLOPE = 0.1
+from convnext_tts.utils.const import LRELU_SLOPE
 
 
 class DiscriminatorP(nn.Module):
@@ -223,7 +223,7 @@ class MultiResolutionDiscriminator(nn.Module):
         return y_d_rs, y_d_gs, fmap_rs, fmap_gs
 
 
-class GeneralDiscriminator(nn.Module):
+class CombinedDiscriminator(nn.Module):
     def __init__(self, discriminators):
         super().__init__()
         self.discriminators = nn.ModuleList(discriminators)

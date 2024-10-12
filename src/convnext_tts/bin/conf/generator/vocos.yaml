@@ -57,10 +57,15 @@ vocoder:
     h_channels: 1536
     num_layers: 8
   head:
-    _target_: convnext_tts.modules.vocoder.WaveNeXtHead
+    _target_: convnext_tts.modules.vocoder.VocosHead
     channels: ${..backbone.channels}
-    n_fft: ${mel.n_fft}
-    hop_length: ${mel.hop_length}
+    out_channels: 514
+    istft:
+      _target_: torchaudio.transforms.InverseSpectrogram
+      n_fft: 512
+      hop_length: 240
+      win_length: 480
+      center: true
 
 
 frame_segment_size: ${..train.frame_segment_size}

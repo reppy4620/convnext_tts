@@ -5,11 +5,12 @@ import numpy as np
 import pandas as pd
 import pyworld as pw
 import soundfile as sf
+from joblib import Parallel, delayed
+from tqdm.auto import tqdm
+
 from convnext_tts.frontend.ja import pp_symbols
 from convnext_tts.utils.logging import logger
 from convnext_tts.utils.tqdm import tqdm_joblib
-from joblib import Parallel, delayed
-from tqdm.auto import tqdm
 
 
 @hydra.main(config_path="conf", version_base=None, config_name="config")

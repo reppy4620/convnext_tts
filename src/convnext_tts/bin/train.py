@@ -1,12 +1,13 @@
 from pathlib import Path
 
 import hydra
-from convnext_tts.utils.logging import logger
 from hydra.utils import instantiate
 from lightning import LightningModule, Trainer, seed_everything
 from lightning.pytorch.callbacks import ModelCheckpoint
 from lightning.pytorch.loggers import CSVLogger, TensorBoardLogger
 from omegaconf import OmegaConf
+
+from convnext_tts.utils.logging import logger
 
 
 @hydra.main(config_path="conf", version_base=None, config_name="config")

@@ -4,12 +4,21 @@ import numpy as np
 import pandas as pd
 import torch
 import torchaudio
-from convnext_tts.frontend.ja import text_to_sequence
 from torch.utils.data import Dataset
+
+from convnext_tts.frontend.ja import text_to_sequence
+from convnext_tts.transforms.mel import MelSpectrogramTransform
 
 
 class NormalDataset(Dataset):
-    def __init__(self, df_file, wav_dir, cf0_dir, vuv_dir, to_mel):
+    def __init__(
+        self,
+        df_file: str,
+        wav_dir: str,
+        cf0_dir: str,
+        vuv_dir: str,
+        to_mel: MelSpectrogramTransform,
+    ):
         self.wav_dir = Path(wav_dir)
         self.cf0_dir = Path(cf0_dir)
         self.vuv_dir = Path(vuv_dir)
