@@ -1,10 +1,13 @@
+from typing import Tuple
+
 import torch
 import torch.nn as nn
 
 from convnext_tts.layers.alignment import AlignmentModule, viterbi_decode
 from convnext_tts.layers.convnext import ConvNeXtLayer
 from convnext_tts.losses.forwardsum import ForwardSumLoss
-from convnext_tts.utils.model import generate_path, sequence_mask
+from convnext_tts.utils.model import length_to_mask
+from convnext_tts.utils.typing import Float, Int
 
 
 # adapted from https://github.com/espnet/espnet/blob/master/espnet2/gan_tts/jets/length_regulator.py
@@ -76,13 +79,23 @@ class VariancePredictor(nn.Module):
         )
         self.out_conv = nn.Conv1d(channels, out_channels, 1)
 
-    def forward(self, x, mask):
+    def forward(self, x: Float["B C T"], mask: Float["B 1 T"]) -> Float["B C T"]:
         if self.detach:
             x = x.detach()
         for layer in self.layers:
             x = layer(x) * mask
         o = self.out_conv(x) * mask
         return o
+
+
+# P: phoneme length, T: Frame length
+VarianceAdaptorOutput = Tuple[
+    Float["B C T"],
+    Float["B 1 P"],
+    Tuple[Float["B 1 P"], Float["B 1 T"], Float["B 1 T"]],
+    Tuple[Float, Float],
+    Float["B T P"],
+]
 
 
 class VarianceAdaptor(nn.Module):
@@ -103,16 +116,16 @@ class VarianceAdaptor(nn.Module):
 
         self.length_regulator = GaussianUpsampling()
 
-    def forward(self, x, y, log_cf0, x_mask, y_mask, x_lengths, y_lengths):
-        # P: phoneme level, T: frame level
-        # x: (B, C, P)
-        # y: (B, C, T)
-        # log_cf0: (B, 1, T)
-        # x_mask: (B, 1, P) phoneme level mask
-        # y_mask: (B, 1, T) frame level mask
-        # x_lengths: (B,)
-        # y_lengths: (B,)
-
+    def forward(
+        self,
+        x: Float["B C P"],
+        y: Float["B C T"],
+        log_cf0: Float["B 1 T"],
+        x_mask: Float["B 1 P"],
+        y_mask: Float["B 1 P"],
+        x_lengths: Int["B"],
+        y_lengths: Int["B"],
+    ) -> VarianceAdaptorOutput:
         log_duration_pred = self.duration_predictor(x, x_mask)
 
         log_p_attn = self.alignment_module(
@@ -148,11 +161,17 @@ class VarianceAdaptor(nn.Module):
             p_attn,
         )
 
-    def infer(self, x, x_mask):
+    def infer(
+        self, x: Float["B C P"], x_mask: Float["B 1 P"]
+    ) -> Tuple[
+        Float["B C T"],
+        Float["B 1 T"],
+        Tuple[Float["B 1 P"], Float["B 1 T"], Float["B 1 T"]],
+    ]:
         log_duration = self.duration_predictor(x, x_mask)
         duration = log_duration.exp().round().long()
         y_lengths = duration.sum(dim=[1, 2])
-        y_mask = sequence_mask(y_lengths).unsqueeze(1).to(x.dtype)
+        y_mask = length_to_mask(y_lengths).unsqueeze(1).to(x.dtype)
 
         x_frame, p_attn = self.length_regulator(
             hs=x.transpose(1, 2),

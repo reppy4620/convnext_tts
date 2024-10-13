@@ -5,7 +5,7 @@ from convnext_tts.losses.masked import masked_l1_loss, masked_mse_loss
 from convnext_tts.modules.convnext import ConvNeXtModule
 from convnext_tts.modules.variance_adaptor import VarianceAdaptor
 from convnext_tts.modules.vocoder import Vocoder
-from convnext_tts.utils.model import rand_slice_segments, sequence_mask, to_log_scale
+from convnext_tts.utils.model import length_to_mask, rand_slice_segments, to_log_scale
 
 
 class ConvNeXtTTS(nn.Module):
@@ -29,8 +29,8 @@ class ConvNeXtTTS(nn.Module):
 
     def training_step(self, batch):
         _, phoneme, mel, cf0, vuv, _, phone_lengths, frame_lengths, _ = batch
-        phone_mask = sequence_mask(phone_lengths).unsqueeze(1).to(mel.dtype)
-        frame_mask = sequence_mask(frame_lengths).unsqueeze(1).to(mel.dtype)
+        phone_mask = length_to_mask(phone_lengths).unsqueeze(1).to(mel.dtype)
+        frame_mask = length_to_mask(frame_lengths).unsqueeze(1).to(mel.dtype)
         log_cf0 = to_log_scale(cf0)
 
         x = self.embedding(phoneme, phone_mask)
@@ -71,7 +71,7 @@ class ConvNeXtTTS(nn.Module):
     def forward(self, phoneme):
         # phoneme: (B, P)
         phone_lengths = (phoneme != 0).sum(dim=1)
-        phone_mask = sequence_mask(phone_lengths)
+        phone_mask = length_to_mask(phone_lengths)
         x = self.embedding(phoneme, phone_mask)
         x = self.encoder(x, phone_mask)
         x_frame, frame_mask, (duration, log_cf0, vuv) = self.variance_adaptor.infer(

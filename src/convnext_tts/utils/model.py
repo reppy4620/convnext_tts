@@ -1,14 +1,14 @@
-# Some utility functions were referenced from Glow-TTS
+# Some utility functions were referenced from Glow-TTS and VITS
 
 import torch
 import torch.nn.functional as F
 
 
 # Generate mask from lengths
-def sequence_mask(length):
-    max_length = length.max()
-    x = torch.arange(int(max_length), dtype=length.dtype, device=length.device)
-    return x.unsqueeze(0) < length.unsqueeze(1)
+def length_to_mask(lengths):
+    max_length = lengths.max()
+    x = torch.arange(int(max_length), dtype=lengths.dtype, device=lengths.device)
+    return x.unsqueeze(0) < lengths.unsqueeze(1)
 
 
 # Generate attention path from duration
@@ -18,7 +18,7 @@ def generate_path(duration, mask):
     cum_duration = torch.cumsum(duration, 1)
     path = torch.zeros(b, t_x, t_y, dtype=mask.dtype).to(device=device)
     cum_duration_flat = cum_duration.view(b * t_x)
-    path = sequence_mask(cum_duration_flat).to(mask.dtype)
+    path = length_to_mask(cum_duration_flat).to(mask.dtype)
     path = path.view(b, t_x, t_y)
     path = path - F.pad(path, [0, 0, 1, 0, 0, 0])[:, :-1]
     path = path * mask
