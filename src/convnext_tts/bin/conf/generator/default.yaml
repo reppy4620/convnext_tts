@@ -24,7 +24,7 @@ variance_adaptor:
   alignment_module:
     _target_: convnext_tts.layers.alignment.AlignmentModule
     adim: ${...encoder.channels}
-    odim: ${....mel.n_mels}
+    odim: ${mel.n_mels}
 
   pitch_predictor:
     _target_: convnext_tts.modules.variance_adaptor.VariancePredictor
@@ -37,7 +37,7 @@ variance_adaptor:
     _target_: torch.nn.Conv1d
     in_channels: 1
     out_channels: ${...encoder.channels}
-    kernel_size: 1
+    kernel_size: 5
     
   forwardsum_loss:
     _target_: convnext_tts.losses.forwardsum.ForwardSumLoss

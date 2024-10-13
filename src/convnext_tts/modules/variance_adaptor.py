@@ -130,6 +130,7 @@ class VarianceAdaptor(nn.Module):
             h_masks=y_mask.squeeze(1).bool(),
             d_masks=x_mask.squeeze(1).bool(),
         )
+        # [B, T, C] -> [B, C, T]
         x_frame = x_frame.transpose(1, 2)
 
         assert x_frame.shape[-1] == y.shape[-1], f"{x_frame.shape} != {y.shape}"
@@ -148,16 +149,19 @@ class VarianceAdaptor(nn.Module):
         )
 
     def infer(self, x, x_mask):
-        log_duration = self.duration_predictor(x)
+        log_duration = self.duration_predictor(x, x_mask)
         duration = log_duration.exp().round().long()
-
         y_lengths = duration.sum(dim=[1, 2])
         y_mask = sequence_mask(y_lengths).unsqueeze(1).to(x.dtype)
-        path_mask = x_mask.unsqueeze(-1) * y_mask.unsqueeze(2)
-        attn_path = generate_path(duration.squeeze(1), path_mask.squeeze(1))
 
-        x_frame = attn_path @ x
-        log_cf0_vuv = self.pitch_predictor(x_frame)
+        x_frame, p_attn = self.length_regulator(
+            hs=x.transpose(1, 2),
+            ds=duration.squeeze(1),
+            h_masks=y_mask.squeeze(1).bool(),
+            d_masks=x_mask.squeeze(1).bool(),
+        )
+        x_frame = x_frame.transpose(1, 2)
+        log_cf0_vuv = self.pitch_predictor(x_frame, y_mask)
         log_cf0, vuv = log_cf0_vuv.split(1, dim=1)
         vuv = vuv.sigmoid()
         vuv = torch.where(vuv < 0.5, 0.0, 1.0)

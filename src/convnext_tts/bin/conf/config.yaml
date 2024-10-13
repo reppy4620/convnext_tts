@@ -26,3 +26,4 @@ train:
 
 syn:
   out_dir: ./out
+  ckpt_path: ../01_train/out/ckpt/last.ckpt

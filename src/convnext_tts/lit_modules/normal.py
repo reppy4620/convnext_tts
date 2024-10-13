@@ -42,8 +42,9 @@ class NormalLitModule(LightningModule):
 
         self.valid_save_data = dict()
 
-    def forward(self, phoneme):
-        return self.generator(phoneme).squeeze(1)
+    def forward(self, batch):
+        phoneme = batch[0][None, :].to(self.device)
+        return self.generator(phoneme)
 
     def _handle_batch(self, batch, train):
         optimizer_g, optimizer_d = self.optimizers()

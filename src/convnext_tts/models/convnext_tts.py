@@ -70,13 +70,13 @@ class ConvNeXtTTS(nn.Module):
 
     def forward(self, phoneme):
         # phoneme: (B, P)
-        phone_lengths = (phoneme != 0).sum(1)
+        phone_lengths = (phoneme != 0).sum(dim=1)
         phone_mask = sequence_mask(phone_lengths)
         x = self.embedding(phoneme, phone_mask)
         x = self.encoder(x, phone_mask)
         x_frame, frame_mask, (duration, log_cf0, vuv) = self.variance_adaptor.infer(
             x=x, x_mask=phone_mask
         )
-        x_frame = self.decoder(x, frame_mask)
+        x_frame = self.decoder(x_frame, frame_mask)
         wav = self.vocoder(x_frame)
-        return wav, (duration, log_cf0, vuv)
+        return wav.squeeze(1), (duration, log_cf0, vuv)

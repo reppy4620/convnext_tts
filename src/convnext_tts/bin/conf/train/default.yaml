@@ -1,9 +1,9 @@
 seed: 42
 
 num_steps: 1000000
-save_ckpt_interval: 200000
+save_ckpt_interval: 100000
 
-batch_size: 16
+batch_size: 8
 num_workers: 4
 
 loss_coef:
