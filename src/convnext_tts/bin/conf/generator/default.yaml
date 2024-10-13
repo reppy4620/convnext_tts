@@ -38,6 +38,7 @@ variance_adaptor:
     in_channels: 1
     out_channels: ${...encoder.channels}
     kernel_size: 5
+    padding: 2
     
   forwardsum_loss:
     _target_: convnext_tts.losses.forwardsum.ForwardSumLoss
