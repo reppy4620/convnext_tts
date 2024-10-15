@@ -11,6 +11,11 @@ Install dependencies using uv([install instructions](https://docs.astral.sh/uv/g
 $ uv sync
 ```
 
+Now I use wandb for logger, you have to login with wandb.
+```
+$ wandb login
+```
+
 ## 1. Download dataset
 Download JSUT corpus([link](https://sites.google.com/site/shinnosuketakamichi/publication/jsut)) and fullcontext label([link](https://github.com/sarulab-speech/jsut-label)) and then sample wave files(basic5000) to 24kHz.
 
