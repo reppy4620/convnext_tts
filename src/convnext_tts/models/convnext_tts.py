@@ -57,7 +57,9 @@ class ConvNeXtTTS(nn.Module):
         wav_pred = self.vocoder(x_frame_crop)
 
         log_duration = to_log_scale(duration)
-        loss_duration = masked_mse_loss(log_duration_pred, log_duration, phone_mask)
+        loss_duration = masked_mse_loss(
+            log_duration_pred.squeeze(1), log_duration, phone_mask
+        )
 
         loss_log_cf0 = masked_l1_loss(log_cf0_pred, log_cf0, frame_mask)
         loss_vuv = masked_l1_loss(vuv_pred, vuv, frame_mask)

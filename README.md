@@ -56,5 +56,5 @@ I found that training WaveNeXt is slower than other vocoder models because the m
 Therefore, when using WaveNeXt for end-to-end learning, the discriminator may become too strong in the early stages of training, so it might be necessary to perform some preliminary training beforehand like JETS.  
 Please note that this issue may be caused by my implementation or data, and therefore it should not be generalized.
 
-The generated samples (trained by exp/jsut/03_vocos) are of poor quality but are barely audible...
+The generated samples (trained by exp/jsut/03_vocos) are of poor quality compared with other models like VITS even if using vocos.
 
