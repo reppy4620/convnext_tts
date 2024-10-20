@@ -18,7 +18,7 @@ class ConvNeXtBackbone(nn.Module):
         self.convnext = ConvNeXtModule(channels, h_channels, num_layers)
         self.norm_last = nn.LayerNorm(channels)
 
-    def forward(self, x: Float["batch channel frame"]) -> Float["batch 1 sample"]:
+    def forward(self, x: Float["batch channel frame"]) -> Float["batch frame channel"]:
         x = self.in_conv(x)
         x = self.norm(x.transpose(1, 2)).transpose(1, 2)
         x = self.convnext(x)

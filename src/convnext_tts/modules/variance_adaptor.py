@@ -79,7 +79,7 @@ class VariancePredictor(nn.Module):
         )
         self.out_conv = nn.Conv1d(channels, out_channels, 1)
 
-    def forward(self, x: Float["B C T"], mask: Float["B 1 T"]) -> Float["B C T"]:
+    def forward(self, x: Float["b c t"], mask: Float["b 1 t"]) -> Float["b c t"]:
         if self.detach:
             x = x.detach()
         for layer in self.layers:
@@ -90,11 +90,13 @@ class VariancePredictor(nn.Module):
 
 # P: phoneme length, T: Frame length
 VarianceAdaptorOutput = Tuple[
-    Float["B C T"],
-    Float["B 1 P"],
-    Tuple[Float["B 1 P"], Float["B 1 T"], Float["B 1 T"]],
-    Tuple[Float, Float],
-    Float["B T P"],
+    Float["b c t"],  # x_frame
+    Float["b 1 p"],  # duration
+    Tuple[
+        Float["b 1 p"], Float["b 1 t"], Float["b 1 t"]
+    ],  # (log_duration_pred, log_cf0_pred, vuv_pred)
+    Tuple[Float, Float],  # (loss_bin, loss_forwardsum)
+    Float["b t p"],  # p_attn
 ]
 
 

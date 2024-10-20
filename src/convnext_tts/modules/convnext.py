@@ -16,8 +16,8 @@ class ConvNeXtModule(nn.Module):
         )
 
     def forward(
-        self, x: Float["B C T"], mask: Optional[Float["B 1 T"]] = None
-    ) -> Float["B C T"]:
+        self, x: Float["b c t"], mask: Optional[Float["b 1 t"]] = None
+    ) -> Float["b c t"]:
         for layer in self.layers:
             x = layer(x)
             if mask is not None:
